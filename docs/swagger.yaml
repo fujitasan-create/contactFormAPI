@@ -1,0 +1,180 @@
+basePath: /
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: 問い合わせフォーム用のREST API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: 問い合わせフォームAPI
+  version: 1.0
+paths:
+  /admin/login:
+    post:
+      consumes:
+      - application/json
+      description: AdminユーザーでログインしてJWTトークンを取得する
+      parameters:
+      - description: ログイン情報
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Adminログイン
+      tags:
+      - Admin API
+  /admin/messages:
+    get:
+      consumes:
+      - application/json
+      description: Adminユーザーが問い合わせ一覧を取得する（JWT認証必須）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/Contact'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 問い合わせ一覧取得
+      tags:
+      - Admin API
+  /contact:
+    post:
+      consumes:
+      - application/json
+      description: 問い合わせフォームから送信された情報を登録する
+      parameters:
+      - description: 問い合わせ情報
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CreateContactRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/CreateContactResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 問い合わせを登録する
+      tags:
+      - Public API
+  /health:
+    get:
+      description: アプリケーションのヘルスチェック用エンドポイント
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HealthResponse'
+      summary: ヘルスチェック
+      tags:
+      - Public API
+securityDefinitions:
+  BearerAuth:
+    description: 'JWT認証。形式: "Bearer {token}"'
+    in: header
+    name: Authorization
+    type: apiKey
+definitions:
+  Contact:
+    properties:
+      contact:
+        example: example@example.com
+        type: string
+      created_at:
+        example: "2025-01-01T12:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      message:
+        example: お問い合わせ内容
+        type: string
+      name:
+        example: 山田太郎
+        type: string
+    type: object
+  CreateContactRequest:
+    properties:
+      contact:
+        example: example@example.com
+        type: string
+      message:
+        example: お問い合わせ内容
+        type: string
+      name:
+        example: 山田太郎
+        type: string
+    required:
+    - contact
+    - message
+    - name
+    type: object
+  CreateContactResponse:
+    properties:
+      status:
+        example: created
+        type: string
+    type: object
+  HealthResponse:
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
+  LoginRequest:
+    properties:
+      password:
+        example: password
+        type: string
+      username:
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  LoginResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+
