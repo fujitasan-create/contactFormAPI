@@ -31,7 +31,7 @@ import (
 // @name Authorization
 // @description JWT認証。形式: "Bearer {token}"
 func main() {
-	// 設定の読み込み
+	// 設定の読み込み（config.Load()内でプロジェクトルートを自動検出して.envを読み込む）
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
@@ -63,4 +63,3 @@ func main() {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
-

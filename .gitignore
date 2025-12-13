@@ -35,3 +35,9 @@ dist/
 # Logs
 *.log
 
+# テストスクリプト（機密情報を含む）
+run_and_test_env.ps1
+run_and_test.ps1
+test_api.ps1
+test_db_connection.go
+

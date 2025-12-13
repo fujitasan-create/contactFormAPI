@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"contactFormAPI/internal/auth"
@@ -49,17 +50,29 @@ func (h *AdminHandler) Login(c *gin.Context) {
 	adminUsername := h.config.AdminUsername
 	adminPasswordHash := h.config.AdminPasswordHash
 
+	// デバッグログ
+	log.Printf("DEBUG Login - Request Username: '%s'", req.Username)
+	log.Printf("DEBUG Login - Config Username: '%s'", adminUsername)
+	log.Printf("DEBUG Login - Password hash length: %d", len(adminPasswordHash))
+	if len(adminPasswordHash) > 0 {
+		log.Printf("DEBUG Login - Password hash (first 30 chars): %s", adminPasswordHash[:min(30, len(adminPasswordHash))])
+	}
+
 	// Usernameの検証
 	if req.Username != adminUsername {
+		log.Printf("DEBUG Login - Username mismatch: '%s' != '%s'", req.Username, adminUsername)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
 
 	// Passwordの検証（bcrypt）
 	if !auth.VerifyPassword(adminPasswordHash, req.Password) {
+		log.Printf("DEBUG Login - Password verification failed")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
+
+	log.Printf("DEBUG Login - Authentication successful")
 
 	// JWTトークンを発行
 	token, err := auth.GenerateToken(req.Username)
@@ -111,3 +124,10 @@ func (h *AdminHandler) GetMessages(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// min関数を追加（Go 1.21未満の場合）
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
