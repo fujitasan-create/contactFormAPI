@@ -5,7 +5,7 @@
 - 言語：Go
 - Webフレームワーク：Gin
 - コンテナ：Docker
-- ホスティング：AWS ECS (Fargate)
+- ホスティング：Fly.io
 - 管理画面はUIを作らず、Swagger UI からJSONを確認する運用とする
 
 ## 開発方法
@@ -71,7 +71,7 @@ docker-compose down
 
 ### GET /health
 - 概要：ヘルスチェック用
-- 用途：ECS / ALB のヘルスチェック
+- 用途：Fly.io のヘルスチェック
 
 - Response
   - 200 OK
@@ -154,8 +154,10 @@ Authorization: Bearer <JWT_TOKEN>
 │  └─ repository/
 ├─ migrations/
 ├─ docs/
+├─ scripts/
 ├─ Dockerfile
 ├─ docker-compose.yml
+├─ fly.toml
 └─ go.mod
 
 ## Swagger
@@ -170,25 +172,100 @@ Authorization: Bearer <JWT_TOKEN>
 - 環境変数で設定を注入
 - /health エンドポイントを実装
 
-## AWS ECS (Fargate) 設計
-- ECR：Dockerイメージ格納
-- ECS Fargate：API実行
-- ALB：外部公開
-- RDS(PostgreSQL)：データ保存
-- CloudWatch Logs：ログ管理
+## Fly.io デプロイ設計
 
-### Task Definition
+### インフラ構成
+- **Fly.io**: アプリケーション実行（Dockerコンテナ）
+- **Fly.io PostgreSQL**: データ保存（別アプリとして管理）
+- **自動HTTPS**: `force_https = true` で自動的にHTTPS化
+- **自動スケーリング**: リクエストに応じて自動起動・停止
+
+### 設定ファイル（fly.toml）
 - ポート：8080
-- 環境変数
-  - DATABASE_URL
-  - JWT_SECRET
-  - ADMIN_USERNAME
-  - ADMIN_PASSWORD_HASH
-- ヘルスチェック
-  - GET /health
+- リージョン：nrt（東京）
+- メモリ：512MB
+- CPU：1コア
+
+### 環境変数（Fly.io Secrets）
+以下の環境変数を `fly secrets set` で設定：
+- `DATABASE_URL`: Fly.io PostgreSQLの接続URL（自動設定される場合あり）
+- `JWT_SECRET`: JWT署名用の秘密鍵
+- `ADMIN_USERNAME`: Adminユーザー名
+- `ADMIN_PASSWORD_HASH`: Adminパスワードのbcryptハッシュ
+- `PORT`: アプリケーションのポート（デフォルト: 8080）
+
+### デプロイ時の自動実行
+- **マイグレーション**: `release_command`でデプロイ時に自動実行
+  ```toml
+  [deploy]
+    release_command = "sh -c 'psql \"$DATABASE_URL\" -f migrations/001_create_contacts_table.up.sql || true'"
+  ```
+
+### ヘルスチェック
+- エンドポイント：`GET /health`
+- Fly.ioが自動的にヘルスチェックを実行
+
+### デプロイコマンド
+```bash
+# デプロイ
+fly deploy -a contactformapi
+
+# ログ確認
+fly logs -a contactformapi
+
+# 環境変数設定
+fly secrets set -a contactformapi JWT_SECRET=your-secret
+```
 
 ## セキュリティ・運用上の考慮
 - POST /contact にレート制限
 - 入力文字数制限
 - Admin API は JWT 必須
-- 機密情報は Secrets Manager 管理を推奨
+- 機密情報は Fly.io Secrets で管理（`fly secrets set`）
+- HTTPS は自動的に有効化（`force_https = true`）
+
+## Fly.io デプロイ手順
+
+### 1. Fly.io CLI のインストール
+```bash
+# Windows (PowerShell)
+iwr https://fly.io/install.ps1 -useb | iex
+```
+
+### 2. ログイン
+```bash
+fly auth login
+```
+
+### 3. アプリの作成（初回のみ）
+```bash
+fly launch
+```
+
+### 4. PostgreSQL の作成（別アプリとして）
+```bash
+fly postgres create --name contactform-db
+```
+
+### 5. 環境変数の設定
+```bash
+# パスワードハッシュを生成
+go run scripts/generate_password_hash.go your_password
+
+# 環境変数を設定
+fly secrets set -a contactformapi \
+  JWT_SECRET=your-secret \
+  ADMIN_USERNAME=admin \
+  ADMIN_PASSWORD_HASH='$2a$10$...'
+```
+
+### 6. デプロイ
+```bash
+fly deploy -a contactformapi
+```
+
+### 7. 動作確認
+- Swagger UI: `https://contactformapi.fly.dev/swagger/index.html`
+- ヘルスチェック: `https://contactformapi.fly.dev/health`
+
+詳細なトラブルシューティングは [README_FLYIO_TROUBLESHOOTING.md](README_FLYIO_TROUBLESHOOTING.md) を参照してください。
