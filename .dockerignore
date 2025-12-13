@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README*.md
+*.md
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+.env.*
+
+# Test files
+*_test.go
+test_*.go
+test_*.ps1
+run_and_test*.ps1
+test_api.ps1
+test_db_connection.go
+
+# Scripts (keep only necessary ones)
+scripts/generate_password_hash.go
+
+# Build output
+bin/
+dist/
+*.exe
+*.test
+*.out
+
+# Logs
+*.log
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Database
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+Thumbs.db

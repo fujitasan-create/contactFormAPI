@@ -1,0 +1,9 @@
+# このファイルは.envファイルの代わりに環境変数を直接設定する例です
+# 実際の使用時は、.envファイルで$を$$でエスケープしてください
+# 例: ADMIN_PASSWORD_HASH=$$2a$$10$$...
+
+services:
+  api:
+    environment:
+      ADMIN_PASSWORD_HASH: "$$2a$$10$$F9R3SCNxCitnJotoN1.vMe9kbDOC/yKIVJMW87J1wBGpQYw3uBG2m"
+

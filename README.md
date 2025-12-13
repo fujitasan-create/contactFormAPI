@@ -8,6 +8,25 @@
 - ホスティング：AWS ECS (Fargate)
 - 管理画面はUIを作らず、Swagger UI からJSONを確認する運用とする
 
+## 開発方法
+
+**このプロジェクトはDocker Composeのみで開発・実行します。**
+
+```bash
+# コンテナの起動
+docker-compose up -d
+
+# ログの確認
+docker-compose logs -f api
+
+# コンテナの停止
+docker-compose down
+```
+
+詳細は [README_DOCKER.md](README_DOCKER.md) を参照してください。
+
+**注意**: `go run cmd/api/main.go`は使用しません。すべてDocker Composeで実行します。
+
 ## 要件
 
 ### 公開API（一般ユーザー向け）
