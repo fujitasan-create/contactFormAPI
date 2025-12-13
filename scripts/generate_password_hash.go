@@ -25,4 +25,3 @@ func main() {
 	fmt.Printf("\nSet this as ADMIN_PASSWORD_HASH environment variable:\n")
 	fmt.Printf("export ADMIN_PASSWORD_HASH=%s\n", string(hash))
 }
-

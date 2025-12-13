@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -73,10 +74,12 @@ func (h *ContactHandler) CreateContact(c *gin.Context) {
 
 	_, err := h.repo.Create(req.Contact, req.Name, req.Message, ipPtr, userAgentPtr)
 	if err != nil {
+		// エラーの詳細をログに出力（本番環境では機密情報に注意）
+		log.Printf("ERROR: Failed to create contact: %v", err)
+		c.Error(err) // Ginのエラーログに記録
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create contact"})
 		return
 	}
 
 	c.JSON(http.StatusCreated, CreateContactResponse{Status: "created"})
 }
-

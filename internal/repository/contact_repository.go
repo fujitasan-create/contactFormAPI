@@ -83,4 +83,3 @@ func (r *ContactRepository) GetAll() ([]Contact, error) {
 
 	return contacts, nil
 }
-

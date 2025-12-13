@@ -23,7 +23,8 @@ FROM alpine:latest
 
 # セキュリティのため、非rootユーザーを作成
 # wgetをヘルスチェック用にインストール
-RUN apk --no-cache add ca-certificates wget && \
+# postgresql-clientをマイグレーション用にインストール
+RUN apk --no-cache add ca-certificates wget postgresql-client && \
     addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser
 

@@ -26,4 +26,3 @@ type HealthResponse struct {
 func (h *HealthHandler) HealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, HealthResponse{Status: "ok"})
 }
-

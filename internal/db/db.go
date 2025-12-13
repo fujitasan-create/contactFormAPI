@@ -22,6 +22,36 @@ func Init(databaseURL string) error {
 	}
 
 	log.Println("Database connection established")
+
+	// テーブルの存在確認
+	if err := checkTableExists(); err != nil {
+		log.Printf("WARNING: Table check failed: %v", err)
+		log.Println("NOTE: Make sure migrations have been run. The 'contacts' table may not exist.")
+	}
+
+	return nil
+}
+
+// checkTableExists はcontactsテーブルが存在するか確認する
+func checkTableExists() error {
+	var exists bool
+	query := `
+		SELECT EXISTS (
+			SELECT FROM information_schema.tables 
+			WHERE table_schema = 'public' 
+			AND table_name = 'contacts'
+		)
+	`
+	err := DB.QueryRow(query).Scan(&exists)
+	if err != nil {
+		return fmt.Errorf("failed to check table existence: %w", err)
+	}
+
+	if !exists {
+		return fmt.Errorf("table 'contacts' does not exist - migrations may not have been run")
+	}
+
+	log.Println("Table 'contacts' exists")
 	return nil
 }
 
@@ -31,4 +61,3 @@ func Close() error {
 	}
 	return nil
 }
-

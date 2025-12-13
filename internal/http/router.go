@@ -45,4 +45,3 @@ func SetupRouter(cfg *config.Config, contactRepo *repository.ContactRepository) 
 
 	return router
 }
-

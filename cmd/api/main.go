@@ -9,7 +9,7 @@ import (
 	"contactFormAPI/internal/http"
 	"contactFormAPI/internal/repository"
 
-	_ "contactFormAPI/docs"
+	docs "contactFormAPI/docs"
 )
 
 // @title 問い合わせフォームAPI
@@ -50,6 +50,10 @@ func main() {
 	contactRepo := repository.NewContactRepository()
 
 	// ルーターの設定
+
+	docs.SwaggerInfo.Host = "contactformapi.fly.dev"
+	docs.SwaggerInfo.Schemes = []string{"https"}
+	docs.SwaggerInfo.BasePath = "/"
 	router := http.SetupRouter(cfg, contactRepo)
 
 	// サーバー起動
@@ -59,7 +63,7 @@ func main() {
 	}
 
 	log.Printf("Server starting on port %s", port)
-	if err := router.Run(":" + port); err != nil {
+	if err := router.Run("0.0.0.0:" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
