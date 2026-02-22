@@ -7,6 +7,7 @@ import (
 	"contactFormAPI/internal/http/middleware"
 	"contactFormAPI/internal/repository"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -14,6 +15,15 @@ import (
 
 func SetupRouter(cfg *config.Config, contactRepo *repository.ContactRepository) *gin.Engine {
 	router := gin.Default()
+
+	// CORS設定
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:4321"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// Swagger設定
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
